@@ -1,0 +1,37 @@
+{
+	"version": 0,
+	"dependencies": [
+		{
+			"importpath": "golang.org/x/crypto/curve25519",
+			"repository": "https://go.googlesource.com/crypto",
+			"revision": "3fbbcd23f1cb824e69491a5930cfeff09b12f4d2",
+			"branch": "master",
+			"path": "/curve25519",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/crypto/nacl",
+			"repository": "https://go.googlesource.com/crypto",
+			"revision": "3fbbcd23f1cb824e69491a5930cfeff09b12f4d2",
+			"branch": "master",
+			"path": "/nacl",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/crypto/poly1305",
+			"repository": "https://go.googlesource.com/crypto",
+			"revision": "3fbbcd23f1cb824e69491a5930cfeff09b12f4d2",
+			"branch": "master",
+			"path": "/poly1305",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/crypto/salsa20/salsa",
+			"repository": "https://go.googlesource.com/crypto",
+			"revision": "3fbbcd23f1cb824e69491a5930cfeff09b12f4d2",
+			"branch": "master",
+			"path": "/salsa20/salsa",
+			"notests": true
+		}
+	]
+}

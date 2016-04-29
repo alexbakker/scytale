@@ -1,0 +1,107 @@
+{{ define "content" }}
+<div class="panel panel-default">
+	<div class="panel-heading">Upload</div>
+	<div class="panel-body">
+	    <input type="file" onchange="fileChangedCallback(this.files)"/>
+		<br/>
+		<div style="display: none;" id="progressBarDiv">
+			<div class="progress">
+				<div class="progress-bar progress-bar-striped active" role="progressbar"
+					aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+					style="width: 0%;" id="progressBar">
+				</div>
+			</div>
+			<center>
+				<p id="progressBarText">Loading file: 0%</p>
+			</center>
+		</div>
+	</div>
+</div>
+{{ end }}
+{{ define "scripts" }}
+<script src="js/sodium.min.js"></script>
+<script src="js/base64js.min.js"></script>
+<script>
+	function fileChangedCallback(files) {
+		var file = files[0];
+		if (file == null) {
+			return;
+		}
+
+		if (file.type != "image/jpeg" && file.type != "image/jpg"
+			&& file.type != "image/png" && file.type != "image/gif"
+			&& file.type != "image/bmp") {
+			alert("That doesn't look like an image we support. Only .jpg, .png, .bmp and .gif are supported.");
+			return;
+		}
+
+		var bar = document.getElementById("progressBar");
+		var barText = document.getElementById("progressBarText");
+		document.getElementById("progressBarDiv").style.display = "block";
+
+		var reader = new FileReader();
+		reader.onerror = function (e) {
+			console.error(e);
+		};
+		reader.onprogress = function(e) {
+			if (!e.lengthComputable) {
+				return;
+			}
+
+			var percent = Math.round((e.loaded * 100) / e.total);
+
+			bar.style.width = percent + "%";
+			bar.aria_valuenow = percent;
+			barText.innerHTML = "Loading file: " + percent + "%";
+		};
+		reader.onload = function (e) {
+			bar.style.width = "100%";
+			bar.aria_valuenow = 100;
+			barText.innerHTML = "Encrypting file...";
+
+			//using 0 as the nonce
+			//this is safe because the generated key will only be used once
+			var nonce = new Uint8Array(sodium.crypto_secretbox_NONCEBYTES);
+
+			//and now we pray that the browser uses a csprng
+			var key = sodium.randombytes_buf(sodium.crypto_secretbox_KEYBYTES);
+			var msg = new Uint8Array(e.target.result)
+			var encrypted = sodium.crypto_secretbox_easy(msg, nonce, key);
+			var reqString = JSON.stringify({ data: base64js.fromByteArray(encrypted) });
+
+			var req = new XMLHttpRequest();
+			req.upload.addEventListener("progress", function(e) {
+				if (!e.lengthComputable) {
+					return;
+				}
+
+				var percent = Math.round((e.loaded * 100) / e.total);
+
+				bar.style.width = percent + "%";
+				bar.aria_valuenow = percent;
+				barText.innerHTML = "Uploading file: " + percent + "%";
+			}, false);
+			req.onreadystatechange = function() {
+				if (req.readyState != XMLHttpRequest.DONE) {
+					return;
+				}
+
+				bar.style.width = "100%";
+				bar.aria_valuenow = 100;
+				barText.innerHTML = "Done!";
+
+				var obj = JSON.parse(req.responseText);
+				if (obj.error_code == 0) {
+					document.location = obj.location + "#" + base64js.fromByteArray(key)
+				}
+
+				//probably placebo
+				sodium.memzero(key);
+			};
+			req.open("POST", "/ul");
+			req.send(reqString);
+		};
+		reader.readAsArrayBuffer(file);
+	}
+</script>
+{{end}}
