@@ -2,7 +2,13 @@
 <div class="panel panel-default">
 	<div class="panel-heading">Upload</div>
 	<div class="panel-body">
-	    <input type="file" onchange="fileChangedCallback(this.files)"/>
+		<select id="typeComboBox" class="input-large form-control">
+			<option value="0" selected="selected">Encrypted</option>
+			<option value="1">Plain (allows hotlinking)</option>
+		</select>
+		<span class="btn btn-default btn-file">
+		    Choose file <input type="file" onchange="fileChangedCallback(this.files)">
+		</span>
 		<br/>
 		<div style="display: none;" id="progressBarDiv">
 			<div class="progress">
@@ -35,6 +41,21 @@
 			return;
 		}
 
+		var uploadType = document.getElementById("typeComboBox");
+		var shouldEncrypt;
+
+		switch (uploadType.options[uploadType.selectedIndex].value) {
+			case "0":
+				shouldEncrypt = true;
+				break;
+			case "1":
+				shouldEncrypt = false;
+				break;
+			default:
+				alert("wtf");
+				return;
+		}
+
 		var bar = document.getElementById("progressBar");
 		var barText = document.getElementById("progressBarText");
 		document.getElementById("progressBarDiv").style.display = "block";
@@ -57,18 +78,32 @@
 		reader.onload = function (e) {
 			bar.style.width = "100%";
 			bar.aria_valuenow = 100;
-			barText.innerHTML = "Encrypting file...";
 
-			//using 0 as the nonce
-			//this is safe because the generated key will only be used once
-			var nonce = new Uint8Array(sodium.crypto_secretbox_NONCEBYTES);
+			var reqObj = { data: null,  }
+			var key;
 
-			//and now we pray that the browser uses a csprng
-			var key = sodium.randombytes_buf(sodium.crypto_secretbox_KEYBYTES);
-			var msg = new Uint8Array(e.target.result)
-			var encrypted = sodium.crypto_secretbox_easy(msg, nonce, key);
-			var reqString = JSON.stringify({ data: base64js.fromByteArray(encrypted) });
+			if (shouldEncrypt) {
+				barText.innerHTML = "Encrypting file...";
 
+				//using 0 as the nonce
+				//this is safe because the generated key will only be used once
+				var nonce = new Uint8Array(sodium.crypto_secretbox_NONCEBYTES);
+
+				//and now we pray that the browser uses a csprng
+				key = sodium.randombytes_buf(sodium.crypto_secretbox_KEYBYTES);
+				var msg = new Uint8Array(e.target.result)
+				var encrypted = sodium.crypto_secretbox_easy(msg, nonce, key);
+
+				reqObj.data = base64js.fromByteArray(encrypted);
+				reqObj.is_encrypted = true;
+				reqObj.extension = "";
+			} else {
+				reqObj.data = base64js.fromByteArray(new Uint8Array(e.target.result));
+				reqObj.is_encrypted = false;
+				reqObj.extension = "." + file.name.split('.').pop().toLowerCase()
+			}
+
+			var reqString = JSON.stringify(reqObj);
 			var req = new XMLHttpRequest();
 			req.upload.addEventListener("progress", function(e) {
 				if (!e.lengthComputable) {
@@ -92,11 +127,18 @@
 
 				var obj = JSON.parse(req.responseText);
 				if (obj.error_code == 0) {
-					document.location = obj.location + "#" + base64js.fromByteArray(key)
+					var loc = obj.location;
+					if (shouldEncrypt) {
+						loc += "#" + base64js.fromByteArray(key)
+					}
+
+					document.location = loc;
 				}
 
 				//probably placebo
-				sodium.memzero(key);
+				if (key != null) {
+					sodium.memzero(key);
+				}
 			};
 			req.open("POST", "/ul");
 			req.send(reqString);

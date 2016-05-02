@@ -2,36 +2,29 @@ package main
 
 import (
 	"bytes"
-	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"path"
-	"path/filepath"
 )
 
 const (
 	httpListenPort = 8081
 
-	uploadReqMaxSize = 5000000 //in bytes
-	filenameLength   = 12      //in bytes
-	maxFilenameTries = 100
+	uploadReqMaxSize   = 5000000 //in bytes
+	extensionMaxLength = 10      //in chars
 
-	errorCodeOK       = 0
-	errorCodeInternal = 1
-	errorCodeSize     = 2
-	errorCodeThrottle = 3
-	errorCodeFormat   = 4
-)
-
-var (
-	templates = map[string]*template.Template{}
+	errorCodeOK               = 0
+	errorCodeInternal         = 1
+	errorCodeSize             = 2
+	errorCodeThrottle         = 3
+	errorCodeFormat           = 4
+	errorCodeExtensionTooLong = 5
 )
 
 type uploadResponse struct {
@@ -40,7 +33,9 @@ type uploadResponse struct {
 }
 
 type uploadRequest struct {
-	Data string `json:"data"`
+	IsEncrypted bool   `json:"is_encrypted"`
+	Extension   string `json:"extension"` //only set if not encrypted
+	Data        string `json:"data"`
 }
 
 func main() {
@@ -52,33 +47,8 @@ func main() {
 	http.HandleFunc("/", handleHTTPRequest)
 	http.HandleFunc("/ul", handleUploadRequest)
 	http.HandleFunc("/dl", handleDownloadRequest)
-	http.HandleFunc("/img", handleImageRequest)
+	http.HandleFunc("/view", handleViewRequest)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", httpListenPort), nil))
-}
-
-func loadTemplates() error {
-	baseLayout := "./templates/base.html"
-	pages, err := filepath.Glob("./templates/pages/*.html")
-	if err != nil {
-		return err
-	}
-
-	for _, page := range pages {
-		templates[filepath.Base(page)] =
-			template.Must(template.ParseFiles(page, baseLayout))
-	}
-
-	return nil
-}
-
-func renderTemplate(w http.ResponseWriter, name string) error {
-	tmpl, exists := templates[name]
-	if !exists {
-		return fmt.Errorf("template %s does not exist", name)
-	}
-
-	w.Header().Set("Content-Type", "text/html")
-	return tmpl.ExecuteTemplate(w, "base", nil)
 }
 
 func handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
@@ -95,12 +65,13 @@ func handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, http.StatusText(404), 404)
 	} else {
+		w.Header().Set("Content-Type", mimeTypeByExtension(urlPath))
 		w.Write(data)
 	}
 }
 
-func handleImageRequest(w http.ResponseWriter, r *http.Request) {
-	err := renderTemplate(w, "img.html")
+func handleViewRequest(w http.ResponseWriter, r *http.Request) {
+	err := renderTemplate(w, "view.html")
 	if err != nil {
 		fmt.Printf("tmpl exec error: %s\n", err.Error())
 	}
@@ -113,6 +84,7 @@ func handleUploadRequest(w http.ResponseWriter, r *http.Request) {
 	var err error
 	res := uploadResponse{ErrorCode: errorCodeOK}
 	req := uploadRequest{}
+	ext := ""
 
 	if r.Method != "POST" {
 		res.ErrorCode = errorCodeFormat
@@ -130,23 +102,21 @@ func handleUploadRequest(w http.ResponseWriter, r *http.Request) {
 		goto sendRes
 	}
 
-	for i := 0; i < errorCodeInternal; i++ {
-		filename := make([]byte, filenameLength)
-		rand.Read(filename)
-
-		filenameString = base64.URLEncoding.EncodeToString(filename)
-		filenameString = stripChar(filenameString, "=") //URLs don't like '='
-		if _, err = os.Stat(fmt.Sprintf("./img/%s", filenameString)); os.IsNotExist(err) {
-			break
+	if !req.IsEncrypted {
+		if len(req.Extension) > extensionMaxLength {
+			res.ErrorCode = errorCodeExtensionTooLong
+			goto sendRes
 		}
+		ext = req.Extension
 	}
 
-	if filenameString == "" {
+	filenameString, err = generateFilename(ext)
+	if err != nil {
 		res.ErrorCode = errorCodeInternal
 		goto sendRes
 	}
 
-	file, err = os.Create(fmt.Sprintf("./img/%s", filenameString))
+	file, err = os.Create(path.Join("./img/", filenameString))
 	if err != nil {
 		fmt.Printf("file create err: %s\n", err.Error())
 		res.ErrorCode = errorCodeInternal
@@ -161,7 +131,11 @@ func handleUploadRequest(w http.ResponseWriter, r *http.Request) {
 		goto sendRes
 	}
 
-	res.Location = fmt.Sprintf("/img?l=%s", filenameString)
+	if req.IsEncrypted {
+		res.Location = fmt.Sprintf("/view?l=%s", filenameString)
+	} else {
+		res.Location = fmt.Sprintf("/dl?l=%s", filenameString)
+	}
 
 sendRes:
 	resBytes, err := json.Marshal(res)
@@ -178,11 +152,14 @@ func handleDownloadRequest(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("error: empty loc\n")
 	}
 
-	data, err := ioutil.ReadFile(path.Join("./img/", loc))
+	p := path.Join("./img/", loc)
+	data, err := ioutil.ReadFile(p)
+
 	if err != nil {
 		http.Error(w, http.StatusText(404), 404)
 	} else {
-		w.Header().Add("Content-Length", fmt.Sprintf("%d", len(data)))
+		w.Header().Set("Content-Type", mimeTypeByExtension(p))
+		w.Header().Set("Content-Length", fmt.Sprintf("%d", len(data)))
 		w.Write(data)
 	}
 }
