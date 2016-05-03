@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"os"
 	"path"
+
+	"github.com/Impyy/Scytale/lib"
 )
 
 const (
@@ -18,25 +20,7 @@ const (
 
 	uploadReqMaxSize   = 5000000 //in bytes
 	extensionMaxLength = 10      //in chars
-
-	errorCodeOK               = 0
-	errorCodeInternal         = 1
-	errorCodeSize             = 2
-	errorCodeThrottle         = 3
-	errorCodeFormat           = 4
-	errorCodeExtensionTooLong = 5
 )
-
-type uploadResponse struct {
-	ErrorCode int    `json:"error_code"`
-	Location  string `json:"location"`
-}
-
-type uploadRequest struct {
-	IsEncrypted bool   `json:"is_encrypted"`
-	Extension   string `json:"extension"` //only set if not encrypted
-	Data        string `json:"data"`
-}
 
 func main() {
 	err := loadTemplates()
@@ -54,10 +38,11 @@ func main() {
 func handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
 	urlPath := r.URL.Path[1:]
 	if r.URL.Path == "/" {
-		err := renderTemplate(w, "index.html")
+		/*err := renderTemplate(w, "index.html")
 		if err != nil {
 			fmt.Printf("tmpl exec error: %s\n", err.Error())
-		}
+		}*/
+		http.Error(w, http.StatusText(403), 403)
 		return
 	}
 
@@ -82,29 +67,29 @@ func handleUploadRequest(w http.ResponseWriter, r *http.Request) {
 	var filenameString string
 	var file *os.File
 	var err error
-	res := uploadResponse{ErrorCode: errorCodeOK}
-	req := uploadRequest{}
+	res := lib.UploadResponse{ErrorCode: lib.ErrorCodeOK}
+	req := lib.UploadRequest{}
 	ext := ""
 
 	if r.Method != "POST" {
-		res.ErrorCode = errorCodeFormat
+		res.ErrorCode = lib.ErrorCodeFormat
 		goto sendRes
 	}
 
 	if r.ContentLength > uploadReqMaxSize {
-		res.ErrorCode = errorCodeSize
+		res.ErrorCode = lib.ErrorCodeSize
 		goto sendRes
 	}
 
 	err = json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		res.ErrorCode = errorCodeFormat
+		res.ErrorCode = lib.ErrorCodeFormat
 		goto sendRes
 	}
 
 	if !req.IsEncrypted {
 		if len(req.Extension) > extensionMaxLength {
-			res.ErrorCode = errorCodeExtensionTooLong
+			res.ErrorCode = lib.ErrorCodeExtensionTooLong
 			goto sendRes
 		}
 		ext = req.Extension
@@ -112,14 +97,14 @@ func handleUploadRequest(w http.ResponseWriter, r *http.Request) {
 
 	filenameString, err = generateFilename(ext)
 	if err != nil {
-		res.ErrorCode = errorCodeInternal
+		res.ErrorCode = lib.ErrorCodeInternal
 		goto sendRes
 	}
 
 	file, err = os.Create(path.Join("./img/", filenameString))
 	if err != nil {
 		fmt.Printf("file create err: %s\n", err.Error())
-		res.ErrorCode = errorCodeInternal
+		res.ErrorCode = lib.ErrorCodeInternal
 		goto sendRes
 	}
 	defer file.Close()
@@ -127,7 +112,7 @@ func handleUploadRequest(w http.ResponseWriter, r *http.Request) {
 	_, err = io.Copy(file, base64.NewDecoder(base64.StdEncoding, bytes.NewReader([]byte(req.Data))))
 	if err != nil {
 		fmt.Printf("io copy err: %s\n", err.Error())
-		res.ErrorCode = errorCodeInternal
+		res.ErrorCode = lib.ErrorCodeInternal
 		goto sendRes
 	}
 
