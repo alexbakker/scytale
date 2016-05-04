@@ -23,11 +23,6 @@ const (
 )
 
 func main() {
-	err := loadTemplates()
-	if err != nil {
-		panic(err)
-	}
-
 	http.HandleFunc("/", handleHTTPRequest)
 	http.HandleFunc("/ul", handleUploadRequest)
 	http.HandleFunc("/dl", handleDownloadRequest)
@@ -46,8 +41,8 @@ func handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := ioutil.ReadFile(path.Join("./assets/", urlPath))
-	if err != nil {
+	data, exists := assetMap[urlPath]
+	if !exists {
 		http.Error(w, http.StatusText(404), 404)
 	} else {
 		w.Header().Set("Content-Type", mimeTypeByExtension(urlPath))

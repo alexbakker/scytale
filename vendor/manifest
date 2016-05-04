@@ -2,6 +2,13 @@
 	"version": 0,
 	"dependencies": [
 		{
+			"importpath": "github.com/Impyy/go-embed",
+			"repository": "https://github.com/Impyy/go-embed",
+			"revision": "845f3d77900cb2fcbd242e7fa93d6464f5caf0cc",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "golang.org/x/crypto/curve25519",
 			"repository": "https://go.googlesource.com/crypto",
 			"revision": "3fbbcd23f1cb824e69491a5930cfeff09b12f4d2",

@@ -5,29 +5,41 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"strings"
 )
 
 var (
-	templates = map[string]*template.Template{}
+	templateMap = loadTemplates()
+	assetMap    = GetAssets()
 )
 
-func loadTemplates() error {
-	baseLayout := "./templates/base.html"
-	pages, err := filepath.Glob("./templates/pages/*.html")
-	if err != nil {
-		return err
-	}
+func loadTemplates() (templates map[string]*template.Template) {
+	templates = map[string]*template.Template{}
+	baseLayout := "templates/base.html"
+	pages := matchAssetByPrefix("templates/pages/")
 
 	for _, page := range pages {
-		templates[filepath.Base(page)] =
-			template.Must(template.ParseFiles(page, baseLayout))
-	}
+		//parse the child layout
+		tmplName := filepath.Base(page)
+		tmpl := template.Must(template.New(tmplName).Parse(string(assetMap[page])))
 
-	return nil
+		//and finally also parse the base layout
+		templates[tmplName] = template.Must(tmpl.Parse(string(assetMap[baseLayout])))
+	}
+	return
+}
+
+func matchAssetByPrefix(prefix string) (matches []string) {
+	for key := range assetMap {
+		if strings.HasPrefix(key, prefix) {
+			matches = append(matches, key)
+		}
+	}
+	return
 }
 
 func renderTemplate(w http.ResponseWriter, name string) error {
-	tmpl, exists := templates[name]
+	tmpl, exists := templateMap[name]
 	if !exists {
 		return fmt.Errorf("template %s does not exist", name)
 	}
