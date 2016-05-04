@@ -31,7 +31,7 @@ func main() {
 
 	//create the img directory if it doesn't exist
 	if _, err := os.Stat(imgDir); os.IsNotExist(err) {
-		err = os.Mkdir(imgDir, 0)
+		err = os.Mkdir(imgDir, 0777)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
