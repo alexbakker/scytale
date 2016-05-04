@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -16,18 +17,31 @@ import (
 )
 
 const (
-	httpListenPort = 8081
-
+	imgDir             = "./img/"
 	uploadReqMaxSize   = 5000000 //in bytes
 	extensionMaxLength = 10      //in chars
 )
 
+var (
+	flagHTTPListenPort = flag.Int("port", 8080, "tcp port to listen on")
+)
+
 func main() {
+	flag.Parse()
+
+	//create the img directory if it doesn't exist
+	if _, err := os.Stat(imgDir); os.IsNotExist(err) {
+		err = os.Mkdir(imgDir, 0)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+	}
+
 	http.HandleFunc("/", handleHTTPRequest)
 	http.HandleFunc("/ul", handleUploadRequest)
 	http.HandleFunc("/dl", handleDownloadRequest)
 	http.HandleFunc("/view", handleViewRequest)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", httpListenPort), nil))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *flagHTTPListenPort), nil))
 }
 
 func handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
@@ -96,7 +110,7 @@ func handleUploadRequest(w http.ResponseWriter, r *http.Request) {
 		goto sendRes
 	}
 
-	file, err = os.Create(path.Join("./img/", filenameString))
+	file, err = os.Create(path.Join(imgDir, filenameString))
 	if err != nil {
 		fmt.Printf("file create err: %s\n", err.Error())
 		res.ErrorCode = lib.ErrorCodeInternal
@@ -132,7 +146,7 @@ func handleDownloadRequest(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("error: empty loc\n")
 	}
 
-	p := path.Join("./img/", loc)
+	p := path.Join(imgDir, loc)
 	data, err := ioutil.ReadFile(p)
 
 	if err != nil {
