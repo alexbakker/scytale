@@ -29,7 +29,7 @@ func main() {
 	flag.Parse()
 
 	if flagFile == nil || *flagFile == "" {
-		logger.Fatalln("error: flag 'file' is empty")
+		logger.Fatalln("error: flag 'file' is unset")
 	}
 
 	switch *flagMode {
@@ -46,6 +46,10 @@ func upload() {
 	bytes, err := ioutil.ReadFile(*flagFile)
 	if err != nil {
 		logger.Fatalf("read error: %s", err.Error())
+	}
+	if len(bytes) == 0 {
+		logger.Fatalf("error: empty file")
+		return
 	}
 
 	var loc string
