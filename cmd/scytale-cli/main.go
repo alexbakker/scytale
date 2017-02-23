@@ -21,11 +21,16 @@ var (
 	flagEncrypt = flag.Bool("encrypt", true, "whether to use encryption or not")
 	flagOpen    = flag.Bool("open", false, "whether to open the result with xdg-open or not")
 
-	logger   = log.New(os.Stderr, "", 0)
-	endpoint = "http://localhost:8081"
+	logger = log.New(os.Stderr, "", 0)
+	cfg    *config
 )
 
 func main() {
+	var err error
+	if cfg, err = loadConfig(); err != nil {
+		logger.Fatalf("config error: %s", err.Error())
+	}
+
 	flag.Parse()
 
 	if flagFile == nil || *flagFile == "" {
@@ -66,14 +71,14 @@ func upload() {
 		}
 
 		keyString := base64.URLEncoding.EncodeToString(key[:])
-		loc = fmt.Sprintf("%s%s#%s", endpoint, res.Location, keyString)
+		loc = fmt.Sprintf("%s%s#%s", cfg.Endpoint, res.Location, keyString)
 	} else {
 		res, err := uploadBlob(bytes, false)
 		if err != nil {
 			logger.Fatalf("upload error: %s\n", err.Error())
 		}
 
-		loc = fmt.Sprintf("%s%s", endpoint, res.Location)
+		loc = fmt.Sprintf("%s%s", cfg.Endpoint, res.Location)
 	}
 
 	fmt.Fprintf(os.Stdout, "%s\n", loc)
@@ -103,7 +108,7 @@ func uploadBlob(data []byte, isEncrypted bool) (*lib.UploadResponse, error) {
 		return nil, err
 	}
 
-	httpReq, err := http.NewRequest("POST", fmt.Sprintf("%s/ul", endpoint), reqBuff)
+	httpReq, err := http.NewRequest("POST", fmt.Sprintf("%s/ul", cfg.Endpoint), reqBuff)
 	if err != nil {
 		return nil, err
 	}
