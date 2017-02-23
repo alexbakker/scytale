@@ -13,6 +13,7 @@ import (
 	"github.com/Impyy/scytale"
 	"github.com/Impyy/scytale/crypto"
 	"github.com/spf13/cobra"
+	"gopkg.in/h2non/filetype.v1"
 )
 
 type uploadFlags struct {
@@ -47,7 +48,7 @@ func startUpload(cmd *cobra.Command, args []string) {
 	if filename == "-" {
 		filename = "/dev/stdin"
 	} else if !encrypt {
-		req.Extension = path.Ext(filename)
+		req.Extension = "." + path.Ext(filename)
 	}
 
 	bytes, err := ioutil.ReadFile(filename)
@@ -57,6 +58,14 @@ func startUpload(cmd *cobra.Command, args []string) {
 	if len(bytes) == 0 {
 		logger.Fatalf("error: empty file")
 		return
+	}
+
+	if req.Extension == "" {
+		kind, _ := filetype.Match(bytes)
+		if kind == filetype.Unknown {
+			logger.Fatalln("error: unable to determine file type")
+		}
+		req.Extension = "." + kind.Extension
 	}
 
 	if encrypt {
