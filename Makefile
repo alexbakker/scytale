@@ -1,17 +1,17 @@
-all: scytale-cli scytale-server
+all: scycli scyserver
 
-scytale-cli: prep
-	go build -o build/bin/scytale-cli github.com/Impyy/Scytale/cmd/scytale-cli
+scycli: prep
+	go build -o build/bin/scycli github.com/Impyy/Scytale/cmd/scycli
 
-scytale-server: prep scytale-server-assets
-	go build -o build/bin/scytale-server github.com/Impyy/Scytale/cmd/scytale-server
+scyserver: prep scyserver-assets
+	go build -o build/bin/scyserver github.com/Impyy/Scytale/cmd/scyserver
 
-scytale-server-assets:
-	go run vendor/github.com/Impyy/go-embed/*.go -pkg=main -input=cmd/scytale-server/assets -output=cmd/scytale-server/assets.go
+scyserver-assets:
+	go run vendor/github.com/Impyy/go-embed/*.go -pkg=main -input=cmd/scyserver/assets -output=cmd/scyserver/assets.go
 
 prep:
 	mkdir -p build/bin
 
 clean:
 	rm -rf build
-	rm -f cmd/scytale-server/assets.go
+	rm -f cmd/scyserver/assets.go

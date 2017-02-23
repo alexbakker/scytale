@@ -1,0 +1,13 @@
+[Unit]
+Description=Scytale Server
+After=network.target
+
+[Service]
+WorkingDirectory=/var/lib/scyserver
+ExecStart=/usr/local/bin/scyserver -port=8081
+User=scyserver
+Group=scyserver
+UMask=022
+
+[Install]
+WantedBy=multi-user.target

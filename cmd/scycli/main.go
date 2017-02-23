@@ -12,7 +12,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/Impyy/Scytale/lib"
+	"github.com/Impyy/Scytale"
 )
 
 var (

@@ -13,7 +13,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/Impyy/Scytale/lib"
+	"github.com/Impyy/Scytale"
 )
 
 const (
