@@ -4,13 +4,31 @@
 		{
 			"importpath": "github.com/Impyy/go-embed",
 			"repository": "https://github.com/Impyy/go-embed",
+			"vcs": "",
 			"revision": "845f3d77900cb2fcbd242e7fa93d6464f5caf0cc",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/spf13/cobra",
+			"repository": "https://github.com/spf13/cobra",
+			"vcs": "git",
+			"revision": "92ea23a837e66f46ac9e7d04fa826602b7b0a42d",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/spf13/pflag",
+			"repository": "https://github.com/spf13/pflag",
+			"vcs": "git",
+			"revision": "9ff6c6923cfffbcd502984b8e0c80539a94968b7",
 			"branch": "master",
 			"notests": true
 		},
 		{
 			"importpath": "golang.org/x/crypto/curve25519",
 			"repository": "https://go.googlesource.com/crypto",
+			"vcs": "",
 			"revision": "3fbbcd23f1cb824e69491a5930cfeff09b12f4d2",
 			"branch": "master",
 			"path": "/curve25519",
@@ -19,6 +37,7 @@
 		{
 			"importpath": "golang.org/x/crypto/nacl",
 			"repository": "https://go.googlesource.com/crypto",
+			"vcs": "",
 			"revision": "3fbbcd23f1cb824e69491a5930cfeff09b12f4d2",
 			"branch": "master",
 			"path": "/nacl",
@@ -27,6 +46,7 @@
 		{
 			"importpath": "golang.org/x/crypto/poly1305",
 			"repository": "https://go.googlesource.com/crypto",
+			"vcs": "",
 			"revision": "3fbbcd23f1cb824e69491a5930cfeff09b12f4d2",
 			"branch": "master",
 			"path": "/poly1305",
@@ -35,6 +55,7 @@
 		{
 			"importpath": "golang.org/x/crypto/salsa20/salsa",
 			"repository": "https://go.googlesource.com/crypto",
+			"vcs": "",
 			"revision": "3fbbcd23f1cb824e69491a5930cfeff09b12f4d2",
 			"branch": "master",
 			"path": "/salsa20/salsa",

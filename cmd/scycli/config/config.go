@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"encoding/json"
@@ -12,12 +12,12 @@ var (
 	configPath     string
 	configFilename string
 	configPrepared = false
-	configDefaults = &config{
+	configDefaults = &Config{
 		Endpoint: "http://localhost:8080",
 	}
 )
 
-type config struct {
+type Config struct {
 	Endpoint string `json:"endpoint"`
 }
 
@@ -43,14 +43,14 @@ func prepareConfig() error {
 	}
 	if _, err := os.Stat(configFilename); err != nil {
 		if os.IsNotExist(err) {
-			return saveConfig(configDefaults)
+			return Save(configDefaults)
 		}
 		return err
 	}
 	return nil
 }
 
-func loadConfig() (*config, error) {
+func Load() (*Config, error) {
 	if !configPrepared {
 		if err := prepareConfig(); err != nil {
 			return nil, err
@@ -63,7 +63,7 @@ func loadConfig() (*config, error) {
 		return nil, err
 	}
 
-	cfg := config{}
+	cfg := Config{}
 	if err := json.Unmarshal(bytes, &cfg); err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func loadConfig() (*config, error) {
 	return &cfg, nil
 }
 
-func saveConfig(cfg *config) error {
+func Save(cfg *Config) error {
 	bytes, err := json.Marshal(cfg)
 	if err != nil {
 		return err

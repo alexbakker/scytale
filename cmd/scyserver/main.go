@@ -13,7 +13,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/Impyy/Scytale"
+	"github.com/Impyy/scytale"
 )
 
 const (
@@ -76,29 +76,29 @@ func handleUploadRequest(w http.ResponseWriter, r *http.Request) {
 	var filenameString string
 	var file *os.File
 	var err error
-	res := lib.UploadResponse{ErrorCode: lib.ErrorCodeOK}
-	req := lib.UploadRequest{}
+	res := scytale.UploadResponse{ErrorCode: scytale.ErrorCodeOK}
+	req := scytale.UploadRequest{}
 	ext := ""
 
 	if r.Method != "POST" {
-		res.ErrorCode = lib.ErrorCodeFormat
+		res.ErrorCode = scytale.ErrorCodeFormat
 		goto sendRes
 	}
 
 	if r.ContentLength > uploadReqMaxSize {
-		res.ErrorCode = lib.ErrorCodeSize
+		res.ErrorCode = scytale.ErrorCodeSize
 		goto sendRes
 	}
 
 	err = json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		res.ErrorCode = lib.ErrorCodeFormat
+		res.ErrorCode = scytale.ErrorCodeFormat
 		goto sendRes
 	}
 
 	if !req.IsEncrypted {
 		if len(req.Extension) > extensionMaxLength {
-			res.ErrorCode = lib.ErrorCodeExtensionTooLong
+			res.ErrorCode = scytale.ErrorCodeExtensionTooLong
 			goto sendRes
 		}
 		ext = req.Extension
@@ -106,14 +106,14 @@ func handleUploadRequest(w http.ResponseWriter, r *http.Request) {
 
 	filenameString, err = generateFilename(ext)
 	if err != nil {
-		res.ErrorCode = lib.ErrorCodeInternal
+		res.ErrorCode = scytale.ErrorCodeInternal
 		goto sendRes
 	}
 
 	file, err = os.Create(path.Join(imgDir, filenameString))
 	if err != nil {
 		fmt.Printf("file create err: %s\n", err.Error())
-		res.ErrorCode = lib.ErrorCodeInternal
+		res.ErrorCode = scytale.ErrorCodeInternal
 		goto sendRes
 	}
 	defer file.Close()
@@ -121,7 +121,7 @@ func handleUploadRequest(w http.ResponseWriter, r *http.Request) {
 	_, err = io.Copy(file, base64.NewDecoder(base64.StdEncoding, bytes.NewReader([]byte(req.Data))))
 	if err != nil {
 		fmt.Printf("io copy err: %s\n", err.Error())
-		res.ErrorCode = lib.ErrorCodeInternal
+		res.ErrorCode = scytale.ErrorCodeInternal
 		goto sendRes
 	}
 

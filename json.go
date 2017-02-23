@@ -1,4 +1,4 @@
-package lib
+package scytale
 
 const (
 	ErrorCodeOK               = 0

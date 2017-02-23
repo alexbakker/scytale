@@ -1,4 +1,4 @@
-package main
+package crypto
 
 import (
 	"crypto/rand"
@@ -11,7 +11,7 @@ const (
 	nonceSize = 24
 )
 
-func encrypt(in []byte) (*[keySize]byte, []byte, error) {
+func Encrypt(in []byte) (*[keySize]byte, []byte, error) {
 	//using 0 as the nonce
 	//this is safe because the generated key will only be used once
 
@@ -30,7 +30,7 @@ func encrypt(in []byte) (*[keySize]byte, []byte, error) {
 	return key, out, nil
 }
 
-func decrypt(key *[keySize]byte, in []byte) ([]byte, bool) {
+func Decrypt(key *[keySize]byte, in []byte) ([]byte, bool) {
 	//again, 0 as the nonce
 	nonce := new([nonceSize]byte)
 	return secretbox.Open(nil, in, nonce, key)
