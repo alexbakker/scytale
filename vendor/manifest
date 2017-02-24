@@ -65,7 +65,7 @@
 			"importpath": "gopkg.in/h2non/filetype.v1",
 			"repository": "https://gopkg.in/h2non/filetype.v1",
 			"vcs": "git",
-			"revision": "e42395618f967c7925230905a29e63e787e88be6",
+			"revision": "3093b8ebec6efb56ac813238b8beab4ed4eaac6a",
 			"branch": "master",
 			"notests": true
 		}
