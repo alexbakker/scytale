@@ -1,2 +1,2 @@
 build/
-cmd/scytale-server/assets.go
+cmd/scyserver/assets.go
