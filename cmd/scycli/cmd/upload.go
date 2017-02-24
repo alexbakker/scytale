@@ -20,6 +20,7 @@ type uploadFlags struct {
 	Encrypt bool
 	File    string
 	Open    bool
+	URL     string
 }
 
 var (
@@ -35,8 +36,9 @@ var (
 func init() {
 	RootCmd.AddCommand(uploadCmd)
 	uploadCmd.Flags().BoolVarP(&uploadCmdFlags.Encrypt, "encrypt", "e", false, "Encrypt the file before upload.")
-	uploadCmd.Flags().StringVarP(&uploadCmdFlags.File, "file", "f", "-", "The file to encrypt and upload. Pass - to read from stdin")
+	uploadCmd.Flags().StringVarP(&uploadCmdFlags.File, "file", "f", "-", "The file to encrypt and upload. Pass - to read from stdin.")
 	uploadCmd.Flags().BoolVarP(&uploadCmdFlags.Open, "open", "o", false, "Open the result with xdg-open.")
+	uploadCmd.Flags().StringVarP(&uploadCmdFlags.URL, "url", "u", "", "The URL to send the upload request to.")
 }
 
 func startUpload(cmd *cobra.Command, args []string) {
@@ -44,6 +46,11 @@ func startUpload(cmd *cobra.Command, args []string) {
 	encrypt := uploadCmdFlags.Encrypt
 	req := &scytale.UploadRequest{IsEncrypted: encrypt}
 	filename := uploadCmdFlags.File
+	url := cfg.URL
+
+	if uploadCmdFlags.URL != "" {
+		url = uploadCmdFlags.URL
+	}
 
 	if filename == "-" {
 		filename = "/dev/stdin"
@@ -79,12 +86,12 @@ func startUpload(cmd *cobra.Command, args []string) {
 	}
 
 	req.Data = base64.StdEncoding.EncodeToString(bytes)
-	res, err := uploadReq(req)
+	res, err := uploadReq(url, req)
 	if err != nil {
 		logger.Fatalf("upload error: %s\n", err.Error())
 	}
 
-	loc := fmt.Sprintf("%s%s#%s", cfg.URL, res.Location, keyString)
+	loc := fmt.Sprintf("%s%s#%s", url, res.Location, keyString)
 	logger.Println(loc)
 
 	if uploadCmdFlags.Open {
@@ -95,14 +102,14 @@ func startUpload(cmd *cobra.Command, args []string) {
 	}
 }
 
-func uploadReq(req *scytale.UploadRequest) (*scytale.UploadResponse, error) {
+func uploadReq(url string, req *scytale.UploadRequest) (*scytale.UploadResponse, error) {
 	reqBuff := new(bytes.Buffer)
 	err := json.NewEncoder(reqBuff).Encode(req)
 	if err != nil {
 		return nil, err
 	}
 
-	httpReq, err := http.NewRequest("POST", fmt.Sprintf("%s/ul", cfg.URL), reqBuff)
+	httpReq, err := http.NewRequest("POST", fmt.Sprintf("%s/ul", url), reqBuff)
 	if err != nil {
 		return nil, err
 	}
