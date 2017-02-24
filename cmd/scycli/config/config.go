@@ -13,12 +13,12 @@ var (
 	configFilename string
 	configPrepared = false
 	configDefaults = &Config{
-		Endpoint: "http://localhost:8080",
+		URL: "http://localhost:8080",
 	}
 )
 
 type Config struct {
-	Endpoint string `json:"endpoint"`
+	URL string `json:"url"`
 }
 
 func init() {

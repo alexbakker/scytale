@@ -84,7 +84,7 @@ func startUpload(cmd *cobra.Command, args []string) {
 		logger.Fatalf("upload error: %s\n", err.Error())
 	}
 
-	loc := fmt.Sprintf("%s%s#%s", cfg.Endpoint, res.Location, keyString)
+	loc := fmt.Sprintf("%s%s#%s", cfg.URL, res.Location, keyString)
 	logger.Println(loc)
 
 	if uploadCmdFlags.Open {
@@ -102,7 +102,7 @@ func uploadReq(req *scytale.UploadRequest) (*scytale.UploadResponse, error) {
 		return nil, err
 	}
 
-	httpReq, err := http.NewRequest("POST", fmt.Sprintf("%s/ul", cfg.Endpoint), reqBuff)
+	httpReq, err := http.NewRequest("POST", fmt.Sprintf("%s/ul", cfg.URL), reqBuff)
 	if err != nil {
 		return nil, err
 	}
