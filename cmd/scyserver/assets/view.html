@@ -80,8 +80,8 @@
 							break;
 					}
 
-					var decryptedBase64 = base64js.fromByteArray(decrypted)
-					window.location = "data:" + imgType + ";base64," + decryptedBase64;
+					var blob = new Blob([decrypted], {type: imgType});
+					window.location = URL.createObjectURL(blob);
 				}
 				req.open("GET", "/dl?l=" + loc);
 				req.send(null);
