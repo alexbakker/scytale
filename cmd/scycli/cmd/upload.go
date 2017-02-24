@@ -48,7 +48,7 @@ func startUpload(cmd *cobra.Command, args []string) {
 	if filename == "-" {
 		filename = "/dev/stdin"
 	} else if !encrypt {
-		req.Extension = "." + path.Ext(filename)
+		req.Extension = path.Ext(filename)
 	}
 
 	bytes, err := ioutil.ReadFile(filename)
