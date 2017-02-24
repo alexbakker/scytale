@@ -1,0 +1,93 @@
+<html>
+	<head>
+		<title>loading...</title>
+	</head>
+	<body>
+		<p id="statusParagraph">loading...</p>
+		<script src="js/sodium.min.js"></script>
+		<script src="js/base64js.min.js"></script>
+		<script>
+			function updateState(state) {
+				document.title = state;
+				document.getElementById("statusParagraph").innerHTML = state;
+			};
+
+			function getQueryParam(p) {
+				var query = window.location.search.substring(1);
+				var params = query.split("&");
+
+				for (var i = 0; i < params.length; i++) {
+					var pair = params[i].split("=");
+					if (pair[0] == p) {
+						return pair[1];
+					}
+				}
+
+				return null;
+			};
+
+			function getImage() {
+				loc = getQueryParam("l");
+				if (loc == null) {
+					updateState("error: loc is null");
+					return;
+				}
+
+				key = window.location.hash;
+				if (key == null) {
+					updateState("error: key is null");
+					return;
+				}
+				key = base64js.toByteArray(key.slice(1));
+
+				var req = new XMLHttpRequest();
+				req.responseType = "arraybuffer";
+				req.onprogress = function(e) {
+					if (!e.lengthComputable) {
+						return;
+					}
+					var percent = Math.round((e.loaded * 100) / e.total);
+					updateState("downloading... (" + percent + "%)")
+				};
+				req.onreadystatechange = function() {
+					if (req.readyState != XMLHttpRequest.DONE) {
+						return;
+					}
+
+					updateState("decrypting...");
+
+					// nonce is always 0 in our implementation
+					var data = new Uint8Array(req.response);
+					var nonce = new Uint8Array(sodium.crypto_secretbox_NONCEBYTES);
+					var decrypted = sodium.crypto_secretbox_open_easy(data, nonce, key);
+					var imgType = new Int32Array(decrypted.buffer.slice(0, 4))[0];
+
+					switch (imgType) {
+						case 1196314761:
+							imgType = "image/png";
+							break;
+						case 944130375:
+							imgType = "image/gif";
+							break;
+						case 544099650:
+							imgType = "image/bmp";
+							break;
+						case -520103681:
+							imgType = "image/jpg";
+							break;
+						default:
+							imgType = "image/unknown";
+							break;
+					}
+
+					var decryptedBase64 = base64js.fromByteArray(decrypted)
+					window.location = "data:" + imgType + ";base64," + decryptedBase64;
+				}
+				req.open("GET", "/dl?l=" + loc);
+				req.send(null);
+				updateState("downloading...")
+			};
+			window.onload = getImage;
+		</script>
+	</body>
+<html>

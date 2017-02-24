@@ -24,6 +24,7 @@ const (
 
 var (
 	flagHTTPListenPort = flag.Int("port", 8080, "tcp port to listen on")
+	assetMap           = GetAssets()
 )
 
 func main() {
@@ -40,19 +41,17 @@ func main() {
 	http.HandleFunc("/", handleHTTPRequest)
 	http.HandleFunc("/ul", handleUploadRequest)
 	http.HandleFunc("/dl", handleDownloadRequest)
-	http.HandleFunc("/view", handleViewRequest)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *flagHTTPListenPort), nil))
 }
 
 func handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
 	urlPath := r.URL.Path[1:]
-	if r.URL.Path == "/" {
-		/*err := renderTemplate(w, "index.html")
-		if err != nil {
-			fmt.Printf("tmpl exec error: %s\n", err.Error())
-		}*/
+	switch urlPath {
+	case "":
 		http.Error(w, http.StatusText(403), 403)
 		return
+	case "view":
+		urlPath = "view.html"
 	}
 
 	data, exists := assetMap[urlPath]
@@ -61,13 +60,6 @@ func handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.Header().Set("Content-Type", mimeTypeByExtension(urlPath))
 		w.Write(data)
-	}
-}
-
-func handleViewRequest(w http.ResponseWriter, r *http.Request) {
-	err := renderTemplate(w, "view.html")
-	if err != nil {
-		fmt.Printf("tmpl exec error: %s\n", err.Error())
 	}
 }
 
