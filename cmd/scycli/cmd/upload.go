@@ -35,7 +35,7 @@ var (
 func init() {
 	RootCmd.AddCommand(uploadCmd)
 	uploadCmd.Flags().BoolVarP(&uploadCmdFlags.Encrypt, "encrypt", "e", false, "Encrypt the file before upload.")
-	uploadCmd.Flags().StringVarP(&uploadCmdFlags.File, "file", "f", "", "The file to encrypt and upload. Pass - to read from stdin")
+	uploadCmd.Flags().StringVarP(&uploadCmdFlags.File, "file", "f", "-", "The file to encrypt and upload. Pass - to read from stdin")
 	uploadCmd.Flags().BoolVarP(&uploadCmdFlags.Open, "open", "o", false, "Open the result with xdg-open.")
 }
 
