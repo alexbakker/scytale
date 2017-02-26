@@ -81,7 +81,7 @@
 					}
 
 					var blob = new Blob([decrypted], {type: imgType});
-					window.location = URL.createObjectURL(blob);
+					window.location.replace(URL.createObjectURL(blob));
 				}
 				req.open("GET", "/dl?l=" + loc);
 				req.send(null);
