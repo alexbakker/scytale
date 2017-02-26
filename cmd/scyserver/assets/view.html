@@ -76,8 +76,8 @@
 							imgType = "image/jpg";
 							break;
 						default:
-							imgType = "image/unknown";
-							break;
+							updateState("error: unable to infer file type");
+							return;
 					}
 
 					var blob = new Blob([decrypted], {type: imgType});
