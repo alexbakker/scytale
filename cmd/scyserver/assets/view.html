@@ -59,9 +59,16 @@
 					// nonce is always 0 in our implementation
 					var data = new Uint8Array(req.response);
 					var nonce = new Uint8Array(sodium.crypto_secretbox_NONCEBYTES);
-					var decrypted = sodium.crypto_secretbox_open_easy(data, nonce, key);
-					var imgType = new Int32Array(decrypted.buffer.slice(0, 4))[0];
 
+					try {
+						var decrypted = sodium.crypto_secretbox_open_easy(data, nonce, key);
+					}
+					catch (err) {
+						updateState("error: unable to decrypt")
+						return;
+					}
+
+					var imgType = new Int32Array(decrypted.buffer.slice(0, 4))[0];
 					switch (imgType) {
 						case 1196314761:
 							imgType = "image/png";
