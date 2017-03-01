@@ -1,3 +1,10 @@
+// Package crypto is only meant to be used by Scytale.
+//
+// The functions in this package are not meant to be fool-proof abstractions for
+// the underlying secretbox API. Encrypt and Decrypt always use 0 as the nonce.
+// This is acceptable for Scytale because the key is only used once. In other
+// scenarios, this could completely compromise the security of your application.
+// Please don't use this in your own application.
 package crypto
 
 import (
@@ -7,19 +14,15 @@ import (
 )
 
 const (
-	keySize   = 32
+	KeySize   = 32
 	nonceSize = 24
 )
 
-func Encrypt(in []byte) (*[keySize]byte, []byte, error) {
-	//using 0 as the nonce
-	//this is safe because the generated key will only be used once
-
-	//for this purpose we could have used salsa20 instead of xsalsa20 but since
-	//the nacl secretbox api provides xsalsa20 in combination with poly1305
-	//we'll just roll with that
+// Encrypt encrypts the given data with a randomly generated key. The nonce is
+// set to 0.
+func Encrypt(in []byte) (*[KeySize]byte, []byte, error) {
 	nonce := new([nonceSize]byte)
-	key := new([keySize]byte)
+	key := new([KeySize]byte)
 
 	_, err := rand.Read(key[:])
 	if err != nil {
@@ -30,8 +33,9 @@ func Encrypt(in []byte) (*[keySize]byte, []byte, error) {
 	return key, out, nil
 }
 
-func Decrypt(key *[keySize]byte, in []byte) ([]byte, bool) {
-	//again, 0 as the nonce
+// Decrypt decrypts the given data with the given key. The nonce is expected to
+// be 0.
+func Decrypt(key *[KeySize]byte, in []byte) ([]byte, bool) {
 	nonce := new([nonceSize]byte)
 	return secretbox.Open(nil, in, nonce, key)
 }
