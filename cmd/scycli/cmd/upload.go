@@ -27,7 +27,7 @@ var (
 	uploadCmd      = &cobra.Command{
 		Use:   "ul",
 		Short: "Upload a file",
-		Long:  "With optional encryption",
+		Long:  "Upload a file with optional encryption",
 		Run:   startUpload,
 	}
 )
@@ -35,7 +35,7 @@ var (
 func init() {
 	RootCmd.AddCommand(uploadCmd)
 	uploadCmd.Flags().BoolVarP(&uploadCmdFlags.Encrypt, "encrypt", "e", false, "Encrypt the file before upload.")
-	uploadCmd.Flags().StringVarP(&uploadCmdFlags.File, "file", "f", "-", "The file to encrypt and upload. Pass - to read from stdin.")
+	uploadCmd.Flags().StringVarP(&uploadCmdFlags.File, "file", "f", "-", "The file upload. Pass - to read from stdin.")
 	uploadCmd.Flags().StringVarP(&uploadCmdFlags.URL, "url", "u", "", "The URL to send the upload request to.")
 }
 
