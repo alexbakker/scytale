@@ -4,7 +4,7 @@
 	</head>
 	<body>
 		<p id="statusParagraph">loading...</p>
-		<script src="js/sodium.min.js"></script>
+		<script src="js/sjcl.min.js"></script>
 		<script src="js/base64js.min.js"></script>
 		<script>
 			function updateState(state) {
@@ -27,6 +27,10 @@
 			};
 
 			function getImage() {
+				var cipher = sjcl.cipher.aes;
+				var mode = sjcl.mode.gcm;
+				var codec = sjcl.codec.bytes;
+
 				loc = getQueryParam("l");
 				if (loc == null) {
 					updateState("error: loc is null");
@@ -47,24 +51,29 @@
 						return;
 					}
 					var percent = Math.round((e.loaded * 100) / e.total);
-					updateState("downloading... (" + percent + "%)")
+					updateState("downloading... (" + percent + "%)");
+				};
+				req.onerror = function(e) {
+					updateState("error: " + e);
 				};
 				req.onreadystatechange = function() {
-					if (req.readyState != XMLHttpRequest.DONE) {
+					if (req.readyState != XMLHttpRequest.DONE || req.status != 200) {
 						return;
 					}
 
 					updateState("decrypting...");
-
-					// nonce is always 0 in our implementation
-					var data = new Uint8Array(req.response);
-					var nonce = new Uint8Array(sodium.crypto_secretbox_NONCEBYTES);
+					var data = codec.toBits(new Uint8Array(req.response));
 
 					try {
-						var decrypted = sodium.crypto_secretbox_open_easy(data, nonce, key);
+						// the nonce is always 0 in our implementation
+						var nonce = codec.toBits(new Uint8Array(12));
+						key = codec.toBits(key);
+						var aes = new cipher(key);
+						var decrypted = new Uint8Array(codec.fromBits(mode.decrypt(aes, data, nonce)));
 					}
 					catch (err) {
-						updateState("error: unable to decrypt")
+						updateState("error: unable to decrypt");
+						console.log(err)
 						return;
 					}
 
@@ -89,9 +98,10 @@
 
 					var blob = new Blob([decrypted], {type: imgType});
 					window.location.replace(URL.createObjectURL(blob));
-				}
-				req.open("GET", "/dl?l=" + loc);
+				};
+				req.open("GET", "/dl?l=" + loc, true);
 				req.send(null);
+
 				updateState("downloading...")
 			};
 			window.onload = getImage;
