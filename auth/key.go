@@ -24,14 +24,12 @@ func (k Key) MarshalText() ([]byte, error) {
 }
 
 func (k *Key) UnmarshalText(text []byte) error {
-	dec := make([]byte, hex.DecodedLen(len(text)))
-
-	_, err := hex.Decode(dec, text)
+	parsed, err := ParseKey(text)
 	if err != nil {
 		return err
 	}
 
-	*k = dec
+	*k = parsed
 	return nil
 }
 
@@ -44,15 +42,15 @@ func GenerateKey() (Key, error) {
 	return key, nil
 }
 
-func ParseKey(key string) (Key, error) {
-	bytes, err := hex.DecodeString(key)
-	if err != nil {
+func ParseKey(keyString []byte) (Key, error) {
+	key := make([]byte, hex.EncodedLen(len(keyString)))
+	if _, err := hex.Decode(key, keyString); err != nil {
 		return nil, err
 	}
 
-	if len(bytes) != KeySize {
+	if len(key) != KeySize {
 		return nil, errors.New("bad key size")
 	}
 
-	return bytes, nil
+	return key, nil
 }
