@@ -11,6 +11,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"crypto/subtle"
 )
 
 const (
@@ -54,4 +55,9 @@ func Decrypt(key *[KeySize]byte, data []byte) ([]byte, error) {
 	}
 
 	return gcm.Open(nil, nonce, data, nil)
+}
+
+// Equal compares the two given byte slices in constant time.
+func Equal(b1 []byte, b2 []byte) bool {
+	return subtle.ConstantTimeCompare(b1, b2) == 1
 }

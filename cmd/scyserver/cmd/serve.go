@@ -6,7 +6,8 @@ import (
 )
 
 type serveFlags struct {
-	Port int
+	Port          int
+	Compatibility bool
 }
 
 var (
@@ -21,6 +22,7 @@ var (
 func init() {
 	RootCmd.AddCommand(serveCmd)
 	serveCmd.Flags().IntVarP(&serveCmdFlags.Port, "port", "p", 8080, "The TCP port to listen on")
+	serveCmd.Flags().BoolVarP(&serveCmdFlags.Compatibility, "compat", "c", false, "Enable a compatibility redirect for /dl?=... requests")
 }
 
 func startServe(cmd *cobra.Command, args []string) {

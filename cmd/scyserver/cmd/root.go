@@ -4,12 +4,13 @@ import (
 	"log"
 	"os"
 
+	"github.com/Impyy/scytale/auth"
 	"github.com/Impyy/scytale/config"
 	"github.com/spf13/cobra"
 )
 
 type Config struct {
-	//Keys auth.KeyList `json:"keys"`
+	Keys auth.KeyList `json:"keys"`
 }
 
 var (
