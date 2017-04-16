@@ -105,6 +105,7 @@ func uploadReq(url string, req *scytale.UploadRequest) (*scytale.UploadResponse,
 		return nil, err
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("X-Key", cfg.Key.String())
 
 	client := new(http.Client)
 	httpRes, err := client.Do(httpReq)

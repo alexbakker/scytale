@@ -7,6 +7,7 @@ const (
 	ErrorCodeThrottle         = 3
 	ErrorCodeFormat           = 4
 	ErrorCodeExtensionTooLong = 5
+	ErrorCodePermissionDenied = 6
 )
 
 // UploadResponse represents the structure of an upload response.

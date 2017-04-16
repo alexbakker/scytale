@@ -13,6 +13,7 @@ import (
 	"path"
 
 	"github.com/Impyy/scytale"
+	"github.com/Impyy/scytale/auth"
 )
 
 var (
@@ -27,6 +28,7 @@ const (
 
 type Settings struct {
 	Port int
+	Keys auth.KeyList
 }
 
 type Server struct {
@@ -46,13 +48,13 @@ func (s *Server) Serve() error {
 		}
 	}
 
-	http.HandleFunc("/", handleHTTPRequest)
-	http.HandleFunc("/ul", handleUploadRequest)
-	http.HandleFunc("/dl", handleDownloadRequest)
+	http.HandleFunc("/", s.handleHTTPRequest)
+	http.HandleFunc("/ul", s.handleUploadRequest)
+	http.HandleFunc("/dl", s.handleDownloadRequest)
 	return http.ListenAndServe(fmt.Sprintf(":%d", s.settings.Port), nil)
 }
 
-func handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
 	urlPath := r.URL.Path[1:]
 	switch urlPath {
 	case "":
@@ -72,7 +74,8 @@ func handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 //TODO: clean and split up this handler
-func handleUploadRequest(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleUploadRequest(w http.ResponseWriter, r *http.Request) {
+	var key auth.Key
 	var filenameString string
 	var file *os.File
 	var err error
@@ -87,6 +90,17 @@ func handleUploadRequest(w http.ResponseWriter, r *http.Request) {
 
 	if r.ContentLength > uploadReqMaxSize {
 		res.ErrorCode = scytale.ErrorCodeSize
+		goto sendRes
+	}
+
+	key, err = auth.ParseKey([]byte(r.Header.Get("X-Key")))
+	if err != nil {
+		res.ErrorCode = scytale.ErrorCodeFormat
+		goto sendRes
+	}
+
+	if !s.settings.Keys.Contains(key) {
+		res.ErrorCode = scytale.ErrorCodePermissionDenied
 		goto sendRes
 	}
 
@@ -140,7 +154,7 @@ sendRes:
 	w.Write(resBytes)
 }
 
-func handleDownloadRequest(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleDownloadRequest(w http.ResponseWriter, r *http.Request) {
 	loc := r.URL.Query().Get("l")
 	if loc == "" {
 		fmt.Printf("error: empty loc\n")
