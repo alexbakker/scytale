@@ -24,5 +24,8 @@ func init() {
 }
 
 func startServe(cmd *cobra.Command, args []string) {
-	logger.Fatal(server.New(serveCmdFlags.Port).Serve())
+	settings := server.Settings{
+		Port: serveCmdFlags.Port,
+	}
+	logger.Fatal(server.New(&settings).Serve())
 }

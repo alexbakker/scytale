@@ -25,12 +25,16 @@ const (
 	extensionMaxLength = 10      //in chars
 )
 
-type Server struct {
-	port int
+type Settings struct {
+	Port int
 }
 
-func New(port int) *Server {
-	return &Server{port: port}
+type Server struct {
+	settings *Settings
+}
+
+func New(settings *Settings) *Server {
+	return &Server{settings: settings}
 }
 
 func (s *Server) Serve() error {
@@ -45,7 +49,7 @@ func (s *Server) Serve() error {
 	http.HandleFunc("/", handleHTTPRequest)
 	http.HandleFunc("/ul", handleUploadRequest)
 	http.HandleFunc("/dl", handleDownloadRequest)
-	return http.ListenAndServe(fmt.Sprintf(":%d", s.port), nil)
+	return http.ListenAndServe(fmt.Sprintf(":%d", s.settings.Port), nil)
 }
 
 func handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
