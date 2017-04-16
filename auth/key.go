@@ -43,7 +43,7 @@ func GenerateKey() (Key, error) {
 }
 
 func ParseKey(keyString []byte) (Key, error) {
-	key := make([]byte, hex.EncodedLen(len(keyString)))
+	key := make([]byte, hex.DecodedLen(len(keyString)))
 	if _, err := hex.Decode(key, keyString); err != nil {
 		return nil, err
 	}
