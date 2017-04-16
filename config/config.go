@@ -62,7 +62,7 @@ func (m *Manager) Load(i interface{}) error {
 }
 
 func (m *Manager) Save(i interface{}) error {
-	bytes, err := json.Marshal(i)
+	bytes, err := json.MarshalIndent(i, "", "    ")
 	if err != nil {
 		return err
 	}
