@@ -1,3 +1,5 @@
+export GO15VENDOREXPERIMENT=1
+
 all: scycli scyserver
 
 scycli: prep
