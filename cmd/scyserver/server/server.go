@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 
 	"github.com/Impyy/scytale"
 	"github.com/Impyy/scytale/auth"
@@ -160,7 +161,7 @@ func (s *Server) handleDownloadRequest(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("error: empty loc\n")
 	}
 
-	p := path.Join(imgDir, loc)
+	p := path.Join(imgDir, filepath.Base(loc))
 	data, err := ioutil.ReadFile(p)
 
 	if err != nil {
