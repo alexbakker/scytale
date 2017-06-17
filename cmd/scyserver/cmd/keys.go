@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/Impyy/scytale/auth"
+	"github.com/alexbakker/scytale/auth"
 	"github.com/spf13/cobra"
 )
 

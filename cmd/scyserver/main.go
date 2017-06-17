@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/Impyy/scytale/cmd/scyserver/cmd"
+	"github.com/alexbakker/scytale/cmd/scyserver/cmd"
 )
 
 func main() {

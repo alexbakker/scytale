@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/Impyy/scytale/cmd/scycli/cmd"
+	"github.com/alexbakker/scytale/cmd/scycli/cmd"
 )
 
 func main() {

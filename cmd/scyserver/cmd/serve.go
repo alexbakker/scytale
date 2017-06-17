@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/Impyy/scytale/cmd/scyserver/server"
+	"github.com/alexbakker/scytale/cmd/scyserver/server"
 	"github.com/spf13/cobra"
 )
 

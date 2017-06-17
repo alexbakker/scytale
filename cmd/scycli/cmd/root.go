@@ -4,8 +4,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/Impyy/scytale/auth"
-	"github.com/Impyy/scytale/config"
+	"github.com/alexbakker/scytale/auth"
+	"github.com/alexbakker/scytale/config"
 	"github.com/spf13/cobra"
 )
 

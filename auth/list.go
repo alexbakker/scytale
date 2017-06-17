@@ -3,7 +3,7 @@ package auth
 import (
 	"errors"
 
-	"github.com/Impyy/scytale/crypto"
+	"github.com/alexbakker/scytale/crypto"
 )
 
 type (

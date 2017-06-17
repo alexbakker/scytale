@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"path"
 
-	"github.com/Impyy/scytale"
-	"github.com/Impyy/scytale/crypto"
+	"github.com/alexbakker/scytale"
+	"github.com/alexbakker/scytale/crypto"
 	"github.com/spf13/cobra"
 	"gopkg.in/h2non/filetype.v1"
 )

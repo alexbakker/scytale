@@ -13,8 +13,8 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/Impyy/scytale"
-	"github.com/Impyy/scytale/auth"
+	"github.com/alexbakker/scytale"
+	"github.com/alexbakker/scytale/auth"
 )
 
 var (

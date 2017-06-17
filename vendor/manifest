@@ -2,8 +2,8 @@
 	"version": 0,
 	"dependencies": [
 		{
-			"importpath": "github.com/Impyy/go-embed",
-			"repository": "https://github.com/Impyy/go-embed",
+			"importpath": "github.com/alexbakker/go-embed",
+			"repository": "https://github.com/alexbakker/go-embed",
 			"vcs": "",
 			"revision": "845f3d77900cb2fcbd242e7fa93d6464f5caf0cc",
 			"branch": "master",
