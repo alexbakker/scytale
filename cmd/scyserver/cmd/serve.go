@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/alexbakker/scytale/cmd/scyserver/server"
 	"github.com/spf13/cobra"
 )
@@ -26,9 +29,10 @@ func init() {
 }
 
 func startServe(cmd *cobra.Command, args []string) {
-	settings := server.Settings{
-		Port: serveCmdFlags.Port,
-		Keys: cfg.Keys,
+	server, err := server.New(&server.Settings{Keys: cfg.Keys})
+	if err != nil {
+		logger.Fatal(err)
 	}
-	logger.Fatal(server.New(&settings).Serve())
+
+	logger.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", serveCmdFlags.Port), server))
 }

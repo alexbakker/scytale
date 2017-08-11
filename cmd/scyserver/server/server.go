@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"path"
@@ -28,31 +27,36 @@ const (
 )
 
 type Settings struct {
-	Port int
 	Keys auth.KeyList
 }
 
 type Server struct {
 	settings *Settings
+	mux      *http.ServeMux
 }
 
-func New(settings *Settings) *Server {
-	return &Server{settings: settings}
-}
+func New(settings *Settings) (*Server, error) {
+	s := Server{settings: settings}
 
-func (s *Server) Serve() error {
-	//create the img directory if it doesn't exist
+	// create the img directory if it doesn't exist
 	if _, err := os.Stat(imgDir); os.IsNotExist(err) {
 		err = os.Mkdir(imgDir, 0777)
 		if err != nil {
-			log.Fatal(err.Error())
+			return nil, err
 		}
 	}
 
-	http.HandleFunc("/", s.handleHTTPRequest)
-	http.HandleFunc("/ul", s.handleUploadRequest)
-	http.HandleFunc("/dl", s.handleDownloadRequest)
-	return http.ListenAndServe(fmt.Sprintf(":%d", s.settings.Port), nil)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", s.handleHTTPRequest)
+	mux.HandleFunc("/ul", s.handleUploadRequest)
+	mux.HandleFunc("/dl", s.handleDownloadRequest)
+	s.mux = mux
+
+	return &s, nil
+}
+
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.mux.ServeHTTP(w, r)
 }
 
 func (s *Server) handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
