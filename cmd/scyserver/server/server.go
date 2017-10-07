@@ -27,7 +27,8 @@ const (
 )
 
 type Settings struct {
-	Keys auth.KeyList
+	Keys   auth.KeyList
+	NoAuth bool
 }
 
 type Server struct {
@@ -98,15 +99,17 @@ func (s *Server) handleUploadRequest(w http.ResponseWriter, r *http.Request) {
 		goto sendRes
 	}
 
-	key, err = auth.ParseKey([]byte(r.Header.Get("X-Key")))
-	if err != nil {
-		res.ErrorCode = scytale.ErrorCodeFormat
-		goto sendRes
-	}
+	if !s.settings.NoAuth {
+		key, err = auth.ParseKey([]byte(r.Header.Get("X-Key")))
+		if err != nil {
+			res.ErrorCode = scytale.ErrorCodeFormat
+			goto sendRes
+		}
 
-	if !s.settings.Keys.Contains(key) {
-		res.ErrorCode = scytale.ErrorCodePermissionDenied
-		goto sendRes
+		if !s.settings.Keys.Contains(key) {
+			res.ErrorCode = scytale.ErrorCodePermissionDenied
+			goto sendRes
+		}
 	}
 
 	err = json.NewDecoder(r.Body).Decode(&req)

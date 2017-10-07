@@ -11,6 +11,7 @@ import (
 type serveFlags struct {
 	Port          int
 	Compatibility bool
+	NoAuth        bool
 }
 
 var (
@@ -26,10 +27,15 @@ func init() {
 	RootCmd.AddCommand(serveCmd)
 	serveCmd.Flags().IntVarP(&serveCmdFlags.Port, "port", "p", 8080, "The TCP port to listen on")
 	serveCmd.Flags().BoolVarP(&serveCmdFlags.Compatibility, "compat", "c", false, "Enable a compatibility redirect for /dl?=... requests")
+	serveCmd.Flags().BoolVar(&serveCmdFlags.NoAuth, "no-auth", false, "Do not require authentication")
 }
 
 func startServe(cmd *cobra.Command, args []string) {
-	server, err := server.New(&server.Settings{Keys: cfg.Keys})
+	settings := server.Settings{
+		Keys:   cfg.Keys,
+		NoAuth: serveCmdFlags.NoAuth,
+	}
+	server, err := server.New(&settings)
 	if err != nil {
 		logger.Fatal(err)
 	}

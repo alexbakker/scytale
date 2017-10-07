@@ -1,6 +1,6 @@
 # scytale
 
-Simple file hosting for the paranoid. Enjoy your placebo software.
+Simple file hosting for the paranoid.
 
 ## License
 
