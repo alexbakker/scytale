@@ -90,7 +90,7 @@ func startUpload(cmd *cobra.Command, args []string) {
 	}
 
 	loc := fmt.Sprintf("%s%s#%s", url, res.Location, keyString)
-	logger.Println(loc)
+	fmt.Println(loc)
 }
 
 func uploadReq(url string, req *scytale.UploadRequest) (*scytale.UploadResponse, error) {
