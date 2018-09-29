@@ -4,7 +4,8 @@ Simple file hosting for the paranoid.
 
 ## License
 
-The entire codebase is licensed under [AGPL](LICENSE) unless explicitly stated otherwise.
+The entire codebase is licensed under [AGPL](LICENSE) unless explicitly stated
+otherwise.
 
 ## Encryption details
 

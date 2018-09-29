@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/alexbakker/scytale/auth"
+	"github.com/alexbakker/scytale/crypto"
 	"github.com/spf13/cobra"
 )
 
@@ -35,14 +35,14 @@ func startKeysList(cmd *cobra.Command, args []string) {
 }
 
 func startGen(cmd *cobra.Command, args []string) {
-	key, err := auth.GenerateKey()
+	key, err := crypto.GenerateKey()
 	if err != nil {
 		logger.Fatalf("error generating key: %s", err)
 	}
 
-	if err = cfg.Keys.Add(key); err != nil {
-		logger.Fatalf("error adding key: %s", err)
-	}
+	// store a hash of the key
+	hash := crypto.HashKey(key)
+	cfg.Keys = append(cfg.Keys, hash)
 
 	if err = man.Save(&cfg); err != nil {
 		logger.Fatalf("error saving config: %s", err)

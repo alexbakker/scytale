@@ -35,7 +35,7 @@ func startServe(cmd *cobra.Command, args []string) {
 		Keys:   cfg.Keys,
 		NoAuth: serveCmdFlags.NoAuth,
 	}
-	server, err := server.New(&settings)
+	server, err := server.New(settings)
 	if err != nil {
 		logger.Fatal(err)
 	}

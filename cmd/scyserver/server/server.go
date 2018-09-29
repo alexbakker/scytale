@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 
 	"github.com/alexbakker/scytale"
-	"github.com/alexbakker/scytale/auth"
+	"github.com/alexbakker/scytale/crypto"
 )
 
 var (
@@ -27,16 +27,17 @@ const (
 )
 
 type Settings struct {
-	Keys   auth.KeyList
+	Keys   []crypto.KeyHash
 	NoAuth bool
 }
 
 type Server struct {
-	settings *Settings
+	settings Settings
+	keys     map[crypto.KeyHash]bool
 	mux      *http.ServeMux
 }
 
-func New(settings *Settings) (*Server, error) {
+func New(settings Settings) (*Server, error) {
 	s := Server{settings: settings}
 
 	// create the img directory if it doesn't exist
@@ -45,6 +46,12 @@ func New(settings *Settings) (*Server, error) {
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	// copy the list of key hashes to the map
+	s.keys = map[crypto.KeyHash]bool{}
+	for _, hash := range settings.Keys {
+		s.keys[hash] = true
 	}
 
 	mux := http.NewServeMux()
@@ -81,7 +88,7 @@ func (s *Server) handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
 
 //TODO: clean and split up this handler
 func (s *Server) handleUploadRequest(w http.ResponseWriter, r *http.Request) {
-	var key auth.Key
+	var key crypto.Key
 	var filenameString string
 	var file *os.File
 	var err error
@@ -100,13 +107,14 @@ func (s *Server) handleUploadRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !s.settings.NoAuth {
-		key, err = auth.ParseKey([]byte(r.Header.Get("X-Key")))
+		key, err = crypto.ParseKey([]byte(r.Header.Get("X-Key")))
 		if err != nil {
 			res.ErrorCode = scytale.ErrorCodeFormat
 			goto sendRes
 		}
 
-		if !s.settings.Keys.Contains(key) {
+		hash := crypto.HashKey(key)
+		if s.keys[hash] {
 			res.ErrorCode = scytale.ErrorCodePermissionDenied
 			goto sendRes
 		}

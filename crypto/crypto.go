@@ -11,14 +11,22 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"crypto/subtle"
+	"crypto/sha256"
+	"encoding/hex"
+	"errors"
 )
 
 const (
-	KeySize = 32
+	KeySize     = 32
+	KeyHashSize = KeySize
 )
 
-func createCipher(key *[KeySize]byte) (cipher.AEAD, []byte, error) {
+type (
+	Key     [KeySize]byte
+	KeyHash [KeyHashSize]byte
+)
+
+func createCipher(key Key) (cipher.AEAD, []byte, error) {
 	block, err := aes.NewCipher(key[:])
 	if err != nil {
 		return nil, nil, err
@@ -33,13 +41,20 @@ func createCipher(key *[KeySize]byte) (cipher.AEAD, []byte, error) {
 	return gcm, nonce, nil
 }
 
+func GenerateKey() (key Key, err error) {
+	_, err = rand.Read(key[:])
+	if err != nil {
+		return Key{}, nil
+	}
+	return
+}
+
 // Encrypt encrypts the given data with a randomly generated key. The nonce is
 // set to 0.
-func Encrypt(data []byte) (*[KeySize]byte, []byte, error) {
-	key := new([KeySize]byte)
-	_, err := rand.Read(key[:])
+func Encrypt(data []byte) (Key, []byte, error) {
+	key, err := GenerateKey()
 	if err != nil {
-		return nil, nil, err
+		return Key{}, nil, err
 	}
 
 	gcm, nonce, err := createCipher(key)
@@ -48,7 +63,7 @@ func Encrypt(data []byte) (*[KeySize]byte, []byte, error) {
 
 // Decrypt decrypts the given data with the given key. The nonce is expected to
 // be 0.
-func Decrypt(key *[KeySize]byte, data []byte) ([]byte, error) {
+func Decrypt(key Key, data []byte) ([]byte, error) {
 	gcm, nonce, err := createCipher(key)
 	if err != nil {
 		return nil, err
@@ -57,7 +72,66 @@ func Decrypt(key *[KeySize]byte, data []byte) ([]byte, error) {
 	return gcm.Open(nil, nonce, data, nil)
 }
 
-// Equal compares the two given byte slices in constant time.
-func Equal(b1 []byte, b2 []byte) bool {
-	return subtle.ConstantTimeCompare(b1, b2) == 1
+// HashKey calculates a SHA-256 hash of the given key and returns it.
+func HashKey(key Key) (res KeyHash) {
+	return sha256.Sum256(key[:])
+}
+
+func ParseKey(keyString []byte) (Key, error) {
+	if hex.DecodedLen(len(keyString)) != KeySize {
+		return Key{}, errors.New("bad key size")
+	}
+
+	var key Key
+	if _, err := hex.Decode(key[:], keyString); err != nil {
+		return Key{}, err
+	}
+
+	return key, nil
+}
+
+// String implements the fmt.Stringer interface.
+func (h KeyHash) String() string {
+	return hex.EncodeToString(h[:])
+}
+
+// MarshalText implements the encoding.TextMarshaler interface.
+func (h KeyHash) MarshalText() ([]byte, error) {
+	res := make([]byte, hex.EncodedLen(len(h)))
+	hex.Encode(res, h[:])
+	return res, nil
+}
+
+// UnmarshalText implements the encoding.TextUnmarshaler interface.
+func (h *KeyHash) UnmarshalText(text []byte) error {
+	parsed, err := ParseKey(text)
+	if err != nil {
+		return err
+	}
+
+	*h = KeyHash(parsed)
+	return nil
+}
+
+// String implements the fmt.Stringer interface.
+func (k Key) String() string {
+	return hex.EncodeToString(k[:])
+}
+
+// MarshalText implements the encoding.TextMarshaler interface.
+func (k Key) MarshalText() ([]byte, error) {
+	res := make([]byte, hex.EncodedLen(len(k)))
+	hex.Encode(res, k[:])
+	return res, nil
+}
+
+// UnmarshalText implements the encoding.TextUnmarshaler interface.
+func (k *Key) UnmarshalText(text []byte) error {
+	parsed, err := ParseKey(text)
+	if err != nil {
+		return err
+	}
+
+	*k = parsed
+	return nil
 }

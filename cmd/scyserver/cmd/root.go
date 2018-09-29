@@ -4,13 +4,13 @@ import (
 	"log"
 	"os"
 
-	"github.com/alexbakker/scytale/auth"
 	"github.com/alexbakker/scytale/config"
+	"github.com/alexbakker/scytale/crypto"
 	"github.com/spf13/cobra"
 )
 
 type Config struct {
-	Keys auth.KeyList `json:"keys"`
+	Keys []crypto.KeyHash `json:"keys"`
 }
 
 var (
