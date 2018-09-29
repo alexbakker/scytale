@@ -11,7 +11,7 @@ import (
 const (
 	maxNameTries = 100
 
-	nameLength   = 8
+	nameLength   = 10
 	nameAlphabet = "abcdefghijklmnopqrstuvwxyz0123456789"
 )
 
