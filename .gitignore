@@ -1,3 +1,2 @@
 build/
-cmd/scyserver/assets.go
-img/
+server/assets.go

@@ -15,5 +15,5 @@ func init() {
 }
 
 func startDownload(cmd *cobra.Command, args []string) {
-	logger.Fatalln("download mode has not been implemented yet")
+	logger.Fatalln("download functionality has not been implemented yet")
 }

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/alexbakker/scytale/cmd/scyserver/server"
+	"github.com/alexbakker/scytale/server"
 	"github.com/spf13/cobra"
 )
 
@@ -26,16 +26,16 @@ var (
 func init() {
 	RootCmd.AddCommand(serveCmd)
 	serveCmd.Flags().IntVarP(&serveCmdFlags.Port, "port", "p", 8080, "The TCP port to listen on")
-	serveCmd.Flags().BoolVarP(&serveCmdFlags.Compatibility, "compat", "c", false, "Enable a compatibility redirect for /dl?=... requests")
 	serveCmd.Flags().BoolVar(&serveCmdFlags.NoAuth, "no-auth", false, "Do not require authentication")
 }
 
 func startServe(cmd *cobra.Command, args []string) {
-	settings := server.Settings{
+	opts := server.Options{
+		Dir:    cfg.Dir,
 		Keys:   cfg.Keys,
 		NoAuth: serveCmdFlags.NoAuth,
 	}
-	server, err := server.New(settings)
+	server, err := server.New(opts)
 	if err != nil {
 		logger.Fatal(err)
 	}

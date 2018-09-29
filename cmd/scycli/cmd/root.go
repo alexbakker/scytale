@@ -5,13 +5,13 @@ import (
 	"os"
 
 	"github.com/alexbakker/scytale/config"
-	"github.com/alexbakker/scytale/crypto"
+	"github.com/alexbakker/scytale/server/api"
 	"github.com/spf13/cobra"
 )
 
 type Config struct {
-	URL string     `json:"url"`
-	Key crypto.Key `json:"key"`
+	URL string  `json:"url"`
+	Key api.Key `json:"key"`
 }
 
 var (

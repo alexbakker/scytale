@@ -2,15 +2,12 @@ package cmd
 
 import (
 	"bytes"
-	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"path"
 
-	"github.com/alexbakker/scytale"
 	"github.com/alexbakker/scytale/crypto"
+	"github.com/alexbakker/scytale/server/api"
 	"github.com/spf13/cobra"
 	"gopkg.in/h2non/filetype.v1"
 )
@@ -40,91 +37,58 @@ func init() {
 }
 
 func startUpload(cmd *cobra.Command, args []string) {
-	var keyString string
-	encrypt := uploadCmdFlags.Encrypt
-	req := &scytale.UploadRequest{IsEncrypted: encrypt}
-	filename := uploadCmdFlags.File
 	url := cfg.URL
-
 	if uploadCmdFlags.URL != "" {
 		url = uploadCmdFlags.URL
 	}
 
+	var extension string
+	filename := uploadCmdFlags.File
 	if filename == "-" {
 		filename = "/dev/stdin"
-	} else if !encrypt {
-		req.Extension = path.Ext(filename)
+	} else {
+		extension = path.Ext(filename)
 	}
 
-	bytes, err := ioutil.ReadFile(filename)
+	data, err := ioutil.ReadFile(filename)
 	if err != nil {
-		logger.Fatalf("read error: %s", err.Error())
+		logger.Fatalf("read error: %s", err)
 	}
-	if len(bytes) == 0 {
+	if len(data) == 0 {
 		logger.Fatalf("error: empty file")
 		return
 	}
 
-	if req.Extension == "" {
-		kind, _ := filetype.Match(bytes)
+	if extension == "" {
+		kind, _ := filetype.Match(data)
 		if kind == filetype.Unknown {
 			logger.Fatalln("error: unable to determine file type")
 		}
-		req.Extension = "." + kind.Extension
+		extension = "." + kind.Extension
 	}
 
-	if encrypt {
-		key, encryptedBytes, err := crypto.Encrypt(bytes)
+	var keyString string
+	if uploadCmdFlags.Encrypt {
+		key, encryptedData, err := crypto.Encrypt(data)
 		if err != nil {
-			logger.Fatalf("encrypt error: %s\n", err.Error())
+			logger.Fatalf("encrypt error: %s\n", err)
 		}
 
-		bytes = encryptedBytes
-		keyString = base64.URLEncoding.EncodeToString(key[:])
+		data = encryptedData
+		keyString = key.String()
 	}
 
-	req.Data = base64.StdEncoding.EncodeToString(bytes)
-	res, err := uploadReq(url, req)
+	client := api.NewClient(cfg.Key)
+	res, err := client.Upload(cfg.URL, extension, uploadCmdFlags.Encrypt, bytes.NewBuffer(data))
 	if err != nil {
-		logger.Fatalf("upload error: %s\n", err.Error())
+		logger.Fatalf("upload error: %s\n", err)
 	}
 
-	loc := fmt.Sprintf("%s%s#%s", url, res.Location, keyString)
+	var loc string
+	if uploadCmdFlags.Encrypt {
+		loc = fmt.Sprintf("%s/?f=%s#%s", url, res.Filename, keyString)
+	} else {
+		loc = path.Join(url, res.Filename)
+	}
 	fmt.Println(loc)
-}
-
-func uploadReq(url string, req *scytale.UploadRequest) (*scytale.UploadResponse, error) {
-	reqBuff := new(bytes.Buffer)
-	err := json.NewEncoder(reqBuff).Encode(req)
-	if err != nil {
-		return nil, err
-	}
-
-	httpReq, err := http.NewRequest("POST", fmt.Sprintf("%s/ul", url), reqBuff)
-	if err != nil {
-		return nil, err
-	}
-	httpReq.Header.Set("Content-Type", "application/json")
-	httpReq.Header.Set("X-Key", cfg.Key.String())
-
-	client := new(http.Client)
-	httpRes, err := client.Do(httpReq)
-	if err != nil {
-		return nil, err
-	} else if httpRes.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("http status code: %d", httpRes.StatusCode)
-	}
-	defer httpRes.Body.Close()
-
-	res := new(scytale.UploadResponse)
-	err = json.NewDecoder(httpRes.Body).Decode(&res)
-	if err != nil {
-		return nil, err
-	}
-
-	if res.ErrorCode != scytale.ErrorCodeOK {
-		return nil, fmt.Errorf("res error code: %d", res.ErrorCode)
-	}
-
-	return res, nil
 }

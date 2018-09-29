@@ -1,11 +1,12 @@
 # scyserver
 
-```bash
+```sh
 # add a new user for the server
-sudo useradd --system --user-group scyserver --create-home --home-dir /var/lib/scyserver --shell /sbin/nologin
+useradd --system --user-group scyserver --create-home --home-dir /var/lib/scyserver --shell /sbin/nologin
 
 # copy the service file over after reviewing it
-sudo cp etc/scyserver.service /etc/systemd/system
+cp etc/scyserver.service /etc/systemd/system
 
-# run daemon-reload and start the service
+# start the service
+systemctl daemon-reload && systemctl enable --now scyserver
 ```

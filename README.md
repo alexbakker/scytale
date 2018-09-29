@@ -10,7 +10,7 @@ otherwise.
 ## Encryption details
 
 As mentioned in the intro, files can be encrypted client-side before uploading.
-The algorithm used for this is __AES__ in __GCM__ mode with a random __256-bit__
+The algorithm used for this is __AES__ in __GCM__ mode with a random __128-bit__
 key.
 
 The key is included in the hash portion of URL. Web browsers don't forward this
@@ -37,6 +37,7 @@ TODO
 - Go 1.5 or newer (for vendoring support)
 
 ## FAQ
+
 #### Do I have to trust the server?
 
 ###### If you use the web interface

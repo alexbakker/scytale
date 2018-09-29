@@ -2,18 +2,10 @@
 	"version": 0,
 	"dependencies": [
 		{
-			"importpath": "github.com/alexbakker/go-embed",
-			"repository": "https://github.com/alexbakker/go-embed",
-			"vcs": "",
-			"revision": "845f3d77900cb2fcbd242e7fa93d6464f5caf0cc",
-			"branch": "master",
-			"notests": true
-		},
-		{
 			"importpath": "github.com/spf13/cobra",
 			"repository": "https://github.com/spf13/cobra",
 			"vcs": "git",
-			"revision": "92ea23a837e66f46ac9e7d04fa826602b7b0a42d",
+			"revision": "8d114be902bc9f08717804830a55c48378108a28",
 			"branch": "master",
 			"notests": true
 		},
@@ -21,7 +13,7 @@
 			"importpath": "github.com/spf13/pflag",
 			"repository": "https://github.com/spf13/pflag",
 			"vcs": "git",
-			"revision": "9ff6c6923cfffbcd502984b8e0c80539a94968b7",
+			"revision": "298182f68c66c05229eb03ac171abe6e309ee79a",
 			"branch": "master",
 			"notests": true
 		},
@@ -29,7 +21,7 @@
 			"importpath": "gopkg.in/h2non/filetype.v1",
 			"repository": "https://gopkg.in/h2non/filetype.v1",
 			"vcs": "git",
-			"revision": "3093b8ebec6efb56ac813238b8beab4ed4eaac6a",
+			"revision": "cc14fdc9ca0e4c2bafad7458f6ff79fd3947cfbb",
 			"branch": "master",
 			"notests": true
 		}

@@ -31,15 +31,15 @@
 				var mode = sjcl.mode.gcm;
 				var codec = sjcl.codec.bytes;
 
-				loc = getQueryParam("l");
-				if (loc == null) {
-					updateState("error: loc is null");
+				filename = getQueryParam("f");
+				if (filename == null) {
+					updateState("error: filename not set");
 					return;
 				}
 
 				key = window.location.hash;
 				if (key == null) {
-					updateState("error: key is null");
+					updateState("error: key not set");
 					return;
 				}
 				key = base64js.toByteArray(key.slice(1));
@@ -72,7 +72,7 @@
 						var decrypted = new Uint8Array(codec.fromBits(mode.decrypt(aes, data, nonce)));
 					}
 					catch (err) {
-						updateState("error: unable to decrypt");
+						updateState("error: unable to decrypt file");
 						console.log(err)
 						return;
 					}
@@ -99,7 +99,7 @@
 					var blob = new Blob([decrypted], {type: imgType});
 					window.location.replace(URL.createObjectURL(blob));
 				};
-				req.open("GET", "/dl?l=" + loc, true);
+				req.open("GET", "/u/" + filename + ".bin", true);
 				req.send(null);
 
 				updateState("downloading...")
