@@ -1,40 +1,37 @@
 package server
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
+
+	"github.com/alexbakker/scytale/crypto/random"
 )
 
 const (
-	maxFilenameTries = 100
-	filenameLength   = 12 //in bytes
+	maxNameTries = 100
+
+	nameLength   = 8
+	nameAlphabet = "abcdefghijklmnopqrstuvwxyz0123456789"
 )
 
-func stripChar(s, c string) string {
-	return strings.Map(func(r rune) rune {
-		if strings.IndexRune(c, r) < 0 {
-			return r
-		}
-		return -1
-	}, s)
-}
-
 func generateFilename(dir string, ext string) (string, error) {
-	for i := 0; i < maxFilenameTries; i++ {
-		filename := make([]byte, filenameLength)
-		rand.Read(filename)
+	for i := 0; i < maxNameTries; i++ {
+		nameBytes := make([]byte, nameLength)
+		for i := range nameBytes {
+			j, err := random.Intn(len(nameAlphabet))
+			if err != nil {
+				return "", err
+			}
 
-		res := base64.URLEncoding.EncodeToString(filename) + ext
-		res = stripChar(res, "=") //URLs don't like '='
+			nameBytes[i] = nameAlphabet[j]
+		}
+		name := string(nameBytes) + ext
 
-		if _, err := os.Stat(filepath.Join(dir, res)); os.IsNotExist(err) {
-			return res, nil
+		if _, err := os.Stat(filepath.Join(dir, name)); os.IsNotExist(err) {
+			return name, nil
 		}
 	}
 
-	return "", fmt.Errorf("unable to find a free filename in %d tries", maxFilenameTries)
+	return "", fmt.Errorf("couldn't find free filename in %d tries", maxNameTries)
 }
