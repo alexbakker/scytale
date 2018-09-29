@@ -37,7 +37,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	if r.Method != "POST" {
-		writeError(w, "bad method", http.StatusBadRequest)
+		http.Error(w, "error: bad method", http.StatusBadRequest)
 		return
 	}
 

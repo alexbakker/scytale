@@ -4,13 +4,12 @@
 	</head>
 	<body>
 		<p id="statusParagraph">loading...</p>
-		<script src="js/sjcl.min.js"></script>
-		<script src="js/base64js.min.js"></script>
+		<script src="sjcl.min.js"></script>
 		<script>
 			function updateState(state) {
 				document.title = state;
 				document.getElementById("statusParagraph").innerHTML = state;
-			};
+			}
 
 			function getQueryParam(p) {
 				var query = window.location.search.substring(1);
@@ -24,7 +23,15 @@
 				}
 
 				return null;
-			};
+			}
+
+			function hexToBytes(hex) {
+				var bytes = [];
+				for (i = 0; i < hex.length; i += 2) {
+					bytes.push(parseInt(hex.substr(i, 2), 16));
+				}
+				return bytes;
+			}
 
 			function getImage() {
 				var cipher = sjcl.cipher.aes;
@@ -42,7 +49,7 @@
 					updateState("error: key not set");
 					return;
 				}
-				key = base64js.toByteArray(key.slice(1));
+				key = hexToBytes(key.slice(1));
 
 				var req = new XMLHttpRequest();
 				req.responseType = "arraybuffer";
@@ -52,10 +59,10 @@
 					}
 					var percent = Math.round((e.loaded * 100) / e.total);
 					updateState("downloading... (" + percent + "%)");
-				};
+				}
 				req.onerror = function(e) {
 					updateState("error: " + e);
-				};
+				}
 				req.onreadystatechange = function() {
 					if (req.readyState != XMLHttpRequest.DONE || req.status != 200) {
 						return;
@@ -98,12 +105,12 @@
 
 					var blob = new Blob([decrypted], {type: imgType});
 					window.location.replace(URL.createObjectURL(blob));
-				};
+				}
 				req.open("GET", "/u/" + filename + ".bin", true);
 				req.send(null);
 
 				updateState("downloading...")
-			};
+			}
 			window.onload = getImage;
 		</script>
 	</body>
