@@ -88,7 +88,7 @@ func startUpload(cmd *cobra.Command, args []string) {
 	if uploadCmdFlags.Encrypt {
 		loc = fmt.Sprintf("%s/?f=%s#%s", url, res.Filename, keyString)
 	} else {
-		loc = path.Join(url, res.Filename)
+		loc = fmt.Sprintf("%s/%s", url, res.Filename)
 	}
 	fmt.Println(loc)
 }
