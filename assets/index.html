@@ -5,7 +5,8 @@
 	<body>
 		<p>
 			<span id="status" style="display: none">loading... </span>
-			<a id="link" style="display: none">download</a>
+			<a id="dlink" style="display: none">download</a>
+			<span id="vspan" style="display: none">(<a id="vlink" target="_blank">view</a>)</span>
 		</p>
 
 		<script src="sjcl.min.js"></script>
@@ -116,13 +117,14 @@
 
 					var blob = new Blob([decrypted], {type: imgType});
 					var url = URL.createObjectURL(blob);
-					var a = document.getElementById("link");
-					a.download = filename;
-					a.href = url;
-					a.style.display = "inline";
+					var dlink = document.getElementById("dlink");
+					dlink.download = filename;
+					dlink.href = url;
+					dlink.style.display = "inline";
 
 					if (imgType != null) {
-						window.location.replace(url);
+						document.getElementById("vlink").href = url;
+						document.getElementById("vspan").style.display = "inline";
 					} else {
 						a.click();
 					}
