@@ -9,7 +9,7 @@ import (
 	"github.com/alexbakker/scytale/crypto"
 	"github.com/alexbakker/scytale/server/api"
 	"github.com/spf13/cobra"
-	"gopkg.in/h2non/filetype.v1"
+	"github.com/h2non/filetype"
 )
 
 type uploadFlags struct {
