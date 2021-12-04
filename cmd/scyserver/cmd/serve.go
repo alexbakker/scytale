@@ -10,6 +10,7 @@ import (
 
 type serveFlags struct {
 	Port          int
+	Dir           string
 	Compatibility bool
 	NoAuth        bool
 }
@@ -26,12 +27,14 @@ var (
 func init() {
 	RootCmd.AddCommand(serveCmd)
 	serveCmd.Flags().IntVarP(&serveCmdFlags.Port, "port", "p", 8080, "The TCP port to listen on")
+	serveCmd.Flags().StringVarP(&serveCmdFlags.Dir, "dir", "d", "", "The directory to write uploaded files to")
 	serveCmd.Flags().BoolVar(&serveCmdFlags.NoAuth, "no-auth", false, "Do not require authentication")
+	serveCmd.MarkFlagRequired("dir")
 }
 
 func startServe(cmd *cobra.Command, args []string) {
 	opts := server.Options{
-		Dir:    cfg.Dir,
+		Dir:    serveCmdFlags.Dir,
 		Keys:   cfg.Keys,
 		NoAuth: serveCmdFlags.NoAuth,
 	}

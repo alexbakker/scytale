@@ -10,7 +10,6 @@ import (
 )
 
 type Config struct {
-	Dir  string        `json:"dir"`
 	Keys []api.KeyHash `json:"keys"`
 }
 
