@@ -1,17 +1,16 @@
 {
   description = "Nix flake for scytale";
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-21.11";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
   outputs = { self, nixpkgs }: let
       pkgs = import nixpkgs { system = "x86_64-linux"; };
     in {
       defaultPackage.x86_64-linux =
         with pkgs; buildGoModule {
-          pname = "scytale";
-          version = "0.0.0";
+          name = "scytale";
           src = ./.;
 
-          vendorSha256 = "0c01csr9rmp4yizqnps7q1pdadsnin3hmliqgp3z0f5z56xw9lky";
+          vendorHash = "sha256-ftLEuym/OPDHfTjSCoeNVjfVbsBHX4t/9OTWnLJmATA=";
 
           subPackages = [
             "./cmd/scycli"
